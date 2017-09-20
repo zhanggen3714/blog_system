@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ blog_obj.title }}</title>
+    <script src="/static/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="/static/dist/css/bootstrap.css">
+    <script src="/static/dist/js/bootstrap.js"></script>
+    {% block css %}
+    
+    {% endblock %}
+</head>
+<body>
+<div class="head">
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">{{blog_obj.title  }}</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav" style="float: right">
+                     {%  if request.user.is_authenticated  %}
+                    <li><a href="">欢迎您：{{ request.user }}</a> </li>
+                    <li><a href="/back_index/">文章管理</a></li>
+                    <li><a href="/logout/">注销</a></li>
+
+                {% else %}
+                    <li><a href="/login/">登录</a></li>
+                    <li><a href="/reg/">注册</a></li>
+                {% endif %}
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="panel panel-default">
+                <div class="panel-heading">个人信息</div>
+                <div class="panel-body">
+                    <p><img src="{{ blog_obj.user.avatar.url }}" alt="" style="width: 100px;"height="80px"></p>
+                    <p>昵称：{{ blog_obj.user.nickname }}</p>
+                    <p>创建时间：{{ blog_obj.user.create_time|date:'Y-m-d' }}</p>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">我的标签</div>
+                <div class="panel-body">
+                {% for tag in tags_ret %}
+                <p><a href="/blog/{{ blog_obj.user.username }}/article/tag/{{ tag.tags__title }}/">{{ tag.tags__title }}</a>({{ tag.nid__count }})</p>
+                {% endfor %}
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">文章分类</div>
+                {% for category in category_ret %}
+                <p><a href="/blog/{{ blog_obj.user.username }}/article/category/{{ category.category__title }}/">{{ category.category__title }}</a>({{ category.nid__count }})</p>
+                {% endfor %}
+                <div class="panel-body">
+
+                </div>
+            </div>
+             <div class="panel panel-default">
+                <div class="panel-heading">随笔档案</div>
+                <div class="panel-body">
+
+               {% for foo in times %}
+               <p><a href="/blog/{{ blog_obj.user.username}}/article/date/{{ foo.ctime}}/">{{ foo.ctime}}</a>({{ foo.ct }})</p>
+               {% endfor %}
+
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-9">
+        {% block content %}
+            <div class="article-item">
+                {% for article in article_list %}
+                    <h3 class="heaf"><a href="">{{ article.title }} </a></h3>
+                    <div clearfix class="article-body">
+                        {{ article.desc }}
+                        <a href="/homesite/{{blog_obj.user.username }}/?nid={{ article.nid }}">阅读全文</a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endblock %}
+        </div>
+        </div>
+    </div>
+</div>
+</body>
+{% block js %}
+
+{% endblock %}
+</html>

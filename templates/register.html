@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册页面</title>
+    <script src="/static/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="/static/dist/css/bootstrap.css">
+    <script src="/static/dist/js/bootstrap.js"></script>
+     <style>
+        .container{margin-top: 140px}
+        .valid_img{
+            width: 150px;
+            height: 40px}
+{#        父级标签做相对定位#}
+         .avatar{
+             position: relative;
+             width: 60px;
+             height: 60px;
+         }
+{#         子标签(input  和 img ) 脱离文档流 做绝对定位 重合在一起#}
+        .sol{
+            position: absolute;
+            top: 0;
+            left: 35px;
+            height: 60px;
+            width: 60px;}
+{#         把input标签的透明度设置成0，就会隐藏，但标签还在           #}
+         #file_choice{
+             opacity: 0;
+         }
+
+    </style>
+</head>
+<body>
+<div class="container col-md-offset-3" >
+    <div class="row">
+        <div class="col-md-6">
+            <form  novalidate>
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_username">用户名:</label>
+                    {{ obj.username }}<span></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_password ">密码:</label>
+                    {{ obj.password }}<span></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="repat_password ">重新输入密码:</label>
+                    {{ obj.repat_password }}<span></span><span id="all"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">邮箱:</label>
+                    {{ obj.email }}<span></span>
+                </div>
+
+                <div class="form-group  avatar">
+                    <label >头像:</label>
+                    <img src="/static/imag/1.jpg" id="fileimg" class="sol">
+                    <input type="file" id="file_choice" class="sol">
+                </div>
+
+                <div class="form-group">
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label for="valid_code">验证码:</label>
+                            {{ obj.valid_code }}<span></span>
+                        </div>
+                        <div class="col-md-6">
+                            <img class="valid_img" src="/valid_code/" alt="">
+                            <a id="refresh">刷新</a>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-default" id="ajaxsef">注册</button>
+                    <span class="error"></span>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+</body>
+<script>
+{#    验证码刷新#}
+       $('#refresh').click(function () {$('.valid_img')[0].src+='?'})
+{# 验证码刷新结束#}
+
+{#头像更新设置#}
+     $('#file_choice').change(function () {
+       var reader=new FileReader();
+{#        #使用DOM对象，获取input标签中的文件对象#}
+        var first_file=$(this)[0].files[0];
+{#        获取新换文件对象的url #}
+       file_url=reader.readAsDataURL(first_file)
+{#        reader加载完 更换新的src路径#}
+        reader.onload=function ( ) {
+            $('#fileimg')[0].src=this.result
+        }
+    })
+{#头像更新设置结束#}
+{#ajax之能想server端发送字符串，不能发送二进制需要借助formdata对象#}
+{# form对象发送数据   #}
+$('#ajaxsef').click(function () {
+    var $username=$('[ name="username"]').val();
+    var $password=$('[ name="password"]').val();
+    var $repat_password=$('[ name="repat_password"]').val();
+    var $email=$('[ name="email"]').val();
+    var $valid_code=$('[ name="valid_code"]').val();
+    var $csrf=$('[name="csrfmiddlewaretoken"]').val();
+    var formdata=new FormData();
+    formdata.append("username",$username);
+    formdata.append("password",$password);
+    formdata.append("repat_password",$repat_password);
+    formdata.append("email",$email);
+    formdata.append("valid_code",$valid_code);
+    formdata.append("csrfmiddlewaretoken",$csrf);
+    formdata.append("img",$("#file_choice")[0].files[0]);
+{#    把文件对象也添加进去#}
+
+    $.ajax({
+        url:'/reg/',
+        type:"POST",
+        processData: false,
+        contentType: false,
+        data:formdata,
+        success:function (data) {
+            data=JSON.parse(data)
+            if (data['flag']){location.href="/login/"}
+            else{
+                var errors_list=data['errors']
+                $.each(errors_list,function (i,j) {
+                    if (i=='__all__'){$('#all').text(j[0]).css({'color':'red'})}
+                    else {$("#id_"+i).next().text(j).css({'color':'red'})}
+
+                })
+            }
+
+
+
+        }
+
+    })
+})
+
+{# form对象发送数据结束#}
+
+
+
+
+</script>
+</html>

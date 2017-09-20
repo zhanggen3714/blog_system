@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>博客后台管理</title>
+    <script src="/static/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="/static/dist/css/bootstrap.css">
+    <script src="/static/dist/js/bootstrap.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-default">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">博客后台管理</a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li><a href="/index/">首页</a></li>
+
+                </li>
+            </ul>
+            <form class="navbar-form navbar-left">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="输入文章">
+                </div>
+                <button type="submit" class="btn btn-default">Seach</button>
+            </form>
+            <ul class="nav navbar-nav navbar-right ">
+                <li><a>欢迎您: {{ request.user }}</a></li>
+                <li><a href="/logout/">修改密码</a></li>
+                <li><a href="/logout/">注销</a></li>
+            </ul>
+            </li>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="panel panel-default">
+                <div class="panel-heading">博客管理</div>
+                <ul class="list-group">
+                    <li class="list-group-item"><a href="">分类管理</a></li>
+                    <li class="list-group-item"><a href="">标签管理</a></li>
+                </ul>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">文章管理</div>
+                <ul class="list-group">
+                    <li class="list-group-item"><a href="/add_article/">添加随笔</a></li>
+                </ul>
+            </div>
+        </div>
+
+    <div class="col-md-9">
+        <table class="table table-hover">
+            <tr>
+                <th>标题</th>
+                <th>评论数</th>
+                <th>点赞数</th>
+                <th colspan="2">操作</th>
+
+            </tr>
+            {% block article_list %}
+                {% for aticle in article_list %}
+                    <tr>
+                        <td>{{ aticle.title }}</td>
+                        <td>{{ aticle.comment_count }}</td>
+                        <td>{{ aticle.up_count }}</td>
+                        <td><a href="{{ add }}">编辑</a> </td>
+                        <td><a href="/delet_article/?nid={{ aticle.nid }}">删除</a> </td>
+                    </tr>
+                {% endfor %}
+            {% endblock %}
+
+        </table>
+
+    </div>
+
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,179 @@
+{% extends 'homesite.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% block content %}
+    <h1>{{ artic.title }}</h1>
+    {{ detics|safe }}
+    <div class="row">
+        <div>
+            {% csrf_token %}
+            <a>评论{{ artic.comment_count }}</a>
+            <a class="poll">赞</a><span id="count">{{ artic.up_count }}</span><span id="poll"></span>
+        </div>
+    </div>
+    <hr>
+    <h5>已有评论：</h5>
+    <ul class="list-group comment_list">
+        {% for comment in comment_list %}
+            <li class="list-group-item">
+                <a href="">{{ comment.user.username }}</a>
+                <a href="">{{ comment.create_time|date:'Y-m-d H:i' }}</a>
+                <a class="pull-right" href="#comment_content" id="reply_btn">回复</a>
+                <a class="pull-right ">支持&nbs</a>
+                <span name="{{ comment.nid }}" id="comment_nid"></span>
+                <div>
+                    {% if comment.parent_id %}
+                        <span>@{{ comment.parent_id.user }}{{ comment.parent_id.content }} {{ comment.content }}</span>
+                    {% else %}
+                        {{ comment.content }}
+                    {% endif %}
+
+
+                </div>
+
+            </li>
+        {% endfor %}
+
+    </ul>
+    <hr>
+    <form action="/comment/" method="post" novalidate>
+        {% csrf_token %}
+        {{ obj.content }} <span id="errors"></span>
+        <p>
+            <input type="button" value="发表" class="btn btn-primary ajax_comment">
+        </p>
+    </form>
+{% endblock %}
+</body>
+{% block js %}
+    <script>
+        String.prototype.format = function () {
+            var args = arguments;
+            return this.replace(/\{(\d+)\}/g, function (s, i) {
+                return args[i];
+            });
+        };
+        {#      var str1='我曹{0}{1}'.format('你','妈的')#}
+        {#     alert(str1)#}
+    </script>
+    <script>
+        $('.poll').click(function () {
+            var $artic_id = {{ artic.nid }}
+                {% if request.user.is_authenticated %}
+                    $.ajax({
+                        url: "/poll/",
+                        type: 'POST',
+                        data: {'artic_id': $artic_id, "csrfmiddlewaretoken": $("[name='csrfmiddlewaretoken']").val()},
+                        success: function (data) {
+                            data = JSON.parse(data)
+                            if (data['flag']) {
+                                $('#poll').text('已经点赞了').css('color', 'red');
+                                setTimeout(function () {
+                                    $("#poll").text("")
+                                }, 1000)
+
+                            }
+                            else {
+                                $('#count').text(parseInt($('#count').text()) + 1)
+                            }
+
+                        }
+                    })
+
+
+
+                {% else %}
+                    {#                    $('#poll').text('请先登录').css('color', 'red')#}
+                    {#                    setTimeout(function () {#}
+                    {#                        $("#poll").text("")#}
+                    {#                    }, 1000)#}
+                    location.href = "/login/?next={{ request.path }}"
+                {% endif %}
+        })
+    </script>
+    {# 回复评论   #}
+    <script>
+        var $prant_comment_id = '';
+        var $fathercomment_username = '';
+        $(".comment_list").on("click", "#reply_btn", function () {
+            var $fathercomment_username = $(this).siblings().eq(0).text()
+            $('#comment_content').val('@' + $fathercomment_username + '\n')
+            $prant_comment_id = $(this).siblings().eq(3).attr('name')
+
+
+        })
+    </script>
+    {#评论事件#}
+    <script>
+        $('.ajax_comment').click(function () {
+            {#           由于评论内容前缀携带@父评论\n，所以需要 找到'\n'的字符串索引进行截断#}
+            var $index = $('[name="content"]').val().indexOf('\n')
+            var $content = $('[name="content"]').val().substr($index + 1)
+            var $csrf = $("[name='csrfmiddlewaretoken']").val();
+            var $article_id = {{ artic.nid }};
+
+            var formdata = new FormData();
+            formdata.append('csrfmiddlewaretoken', $csrf)
+            formdata.append('content', $content)
+            formdata.append('article_id', $article_id)
+            formdata.append('parent_id_id', $prant_comment_id)
+            {% if request.user.is_authenticated %}
+                $.ajax({
+                    url: '/comment/',
+                    type: 'post',
+                    data: formdata,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        data = JSON.parse(data)
+                        if (data['flag']) {
+                            var $create_time = data['create_time'];
+                            var $content = $('[name="content"]').val();
+                            s = '<li class="list-group-item comment_item"><a href="">{0}</a><a href="">{1}</a><a href="" ' +
+                                'class="pull-right">&nbsp;支持</a> <a href="#comment_content" class="pull-right reply_btn">' +
+                                '回复</a><span class="{2}"></span> <div> <span>{3}</span> <p>{4}</p></div> </li>'
+                            s = s.format(
+                                '{{ request.user.username }}',
+                                $create_time,
+                                $prant_comment_id,
+                                $fathercomment_username,
+                                $content
+                            );
+
+                            $('.comment_list').append(s)
+                            $('[name="content"]').val(' ');
+                            $prant_comment_id = '';
+                            $fathercomment_username = '';
+
+
+                        }
+                        else {
+                            $.each(data['msg'], function (i, j) {
+                                $('#errors').text(j[0]).css('color', 'red')
+                                setTimeout(function () {
+                                    $("#errors").text("")
+                                }, 1000)
+
+
+                            })
+                        }
+                    }
+
+                })
+            {% else %}
+                location.href = "/login/?next={{ request.path }}";
+            {% endif %} })
+
+    </script>
+    {#评论回复#}
+
+
+
+
+{% endblock %}
+</html>

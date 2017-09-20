@@ -1,0 +1,85 @@
+{% extends 'homesite.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    {% block css %}
+        <style>
+        .comment{margin-left: 20px}
+        </style>
+    {% endblock %}
+</head>
+<body>
+{% block content %}
+    <h1>{{ artic.title }}</h1>
+    {{ detics.content|safe }}
+    <div class="row">
+        <div>
+            {% csrf_token %}
+            <a>评论{{ artic.comment_count }}</a>
+            <a class="poll">赞</a><span id="count">{{ artic.up_count }}</span><span id="poll"></span>
+        </div>
+    </div>
+    <h5>已有评论：</h5>
+    <div id="comment_box">
+
+    </div>
+
+    <hr>
+    <form novalidate>
+        {% csrf_token %}
+        <textarea name="content" id="" cols="30" rows="10"></textarea>
+        <p>
+            <input type="button" value="发表" class="btn btn-primary ajax_comment">
+        </p>
+    </form>
+
+{% endblock %}
+</body>
+{% block js %}
+    <script>
+        {#  0准备  字符串格式化函数#}
+        String.prototype.format = function () {
+            var args = arguments;
+            return this.replace(/\{(\d+)\}/g, function (s, i) {
+                return args[i];
+            });
+        };
+        {#1、当页面加载就发送ajax请求#}
+
+
+
+        {#2/ 定义一个函数处理字符串#}
+
+
+        function commen_fuc(args) {
+            var htmls = '';
+            $.each(args, function (k, v) {
+                    var comment_str = '<div class="comment">';
+                    var temp = '<div class="content"><span>{0}</span></div>'.format(v['content']);
+                    comment_str += temp;
+                    if (v['child'])
+                    {comment_str += commen_fuc(v['child'])}
+
+                     comment_str += '</div>';
+                     htmls+=comment_str
+            });
+                    return htmls
+        }
+        $(function () {
+            $.ajax({
+            url: '/blog/cooment_tree/',
+            type: 'get',
+            data: {'nid':{{artic.nid}}},
+            success: function (data) {
+            var Mycommentlist=JSON.parse(data)
+            s=commen_fuc(Mycommentlist)
+            $("#comment_box").append(s) } })})
+
+
+
+
+    </script>
+{% endblock %}
+</html>

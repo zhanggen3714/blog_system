@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>博客系统</title>
+    <link rel="stylesheet" href="/static/dist/css/bootstrap.css">
+    <script src="/static/jquery-3.2.1.min.js"></script>
+    <script src="/static/dist/js/bootstrap.js"></script>
+    <script src="/static/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="/static/commons.css">
+    <style>
+
+        .container {
+            margin-top: 30px;
+        }
+
+        .valid_img {
+            width: 150px;
+            height: 40px;
+        }
+
+        #image1 {
+            width: 60px;
+            height: 60px
+        }
+
+
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-default">
+    <div class="container">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/index/">老子的博客系统</a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                {% for type in fun1 %}
+                    <li>
+                    <li><a href="/blog/{{ type.0 }}/">{{ type.1 }}</a></li></li>
+                {% endfor %}
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                {%  if request.user.is_authenticated  %}
+                    <li><a href="">欢迎您：{{ request.user }}</a> </li>
+                    <li><a href="/logout/">注销</a></li>
+
+                {% else %}
+                    <li><a href="/login/">登录</a></li>
+                    <li><a href="/reg/">注册</a></li>
+                {% endif %}
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-2">
+            <ul class="nav navbar-nav">
+                {#           如果url path的参数为0 高亮全部 #}
+                {% if current_type_choices_id == 0 %}
+                    <p>
+                    <li class="active"><a href="/index/">分类<span class="sr-only">(current)</span></a></li></p>
+                {% else %}
+                    <p>
+                    <li><a href="/index/">分类<span class="sr-only">(current)</span></a></li></p>
+                {% endif %}
+
+                {% for item in func %}
+                    {#              如果url path的参数 等于当期点击索引 就使用class="active" 高亮#}
+                    {% if current_type_choices_id == item.0 %}
+                        <p>
+                        <li class="active"><a href="/blog/{{ item.0 }}/">{{ item.1 }}</a></li></p>
+                    {% else %}
+                        <p>
+                        <li><a href="/blog/{{ item.0 }}/">{{ item.1 }}</a></li></p>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+
+
+        <div class="col-md-7">
+            {#        内容区域开始#}
+            <div class="article-list">
+                <div class="article-item">
+                    {% for article in article_list %}
+                        <h3 class="heaf"><a href="/blog/cooment_tree/?nid={{ article.nid }}">{{ article.title }} </a></h3>
+                        <div clearfix class="article-body">
+                            <a class="left" href=""><img id="image1" src="{{ article.blog.user.avatar.url }}"
+                                                         alt=""></a>
+                            {{ article.desc }}
+                        </div>
+                        <div class="article-footer">
+                            <span><a
+                                    href="/homesite/{{ article.blog.user.username }}/">{{ article.blog.title }}</a> 发布于</span>&nbsp;&nbsp;
+                            <span class="timer">{{ article.create_time|date:'Y-m-d' }}</span> &nbsp;&nbsp;
+                            <span class="glyphicon glyphicon-comment"></span>&nbsp;<a
+                                href="">评论{{ article.comment_count }}</a>&nbsp;&nbsp;
+                            <span class="glyphicon glyphicon-thumbs-up"></span>&nbsp;<a
+                                href="">赞{{ article.up_count }}</a>
+                        </div>
+                    {% endfor %}
+
+
+                </div>
+            </div>
+
+
+        </div>
+
+            {#    面板区域开始#}
+        <div class="col-md-3">
+            <div class="panel panel-default">
+                <div class="panel-heading">面板1</div>
+                <div class="panel-body">
+                    <p>66666666</p>
+                    <p>66666666</p>
+                    <p>66666666</p>
+                    <p>66666666</p>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">面板2</div>
+                    <div class="panel-body">
+                      <p>000000000</p>
+                      <p>000000000</p>
+                      <p>000000000</p>
+                      <p>000000000</p>
+                    </div>
+                </div>
+            </div>
+            {#    面板区域结束#}
+        </div>
+    </div>
+
+</div>
+</body>
+
+</html>

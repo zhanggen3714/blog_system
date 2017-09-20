@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>文章添加</title>
+    <script src="/static/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="/static/dist/css/bootstrap.css">
+    <script src="/static/dist/js/bootstrap.js"></script>
+    <script src="/static/kindeditor-4.1.10/kindeditor-all.js"></script>
+
+</head>
+<body>
+<div class="container">
+    <form action="/add_article/" method="post">
+        {% csrf_token %}
+        <h3>标题</h3>
+        <p><input type="text" style="height: 30px;width:700px " name="title"></p>
+        <h3>内容</h3>
+        <textarea name="content" id="a" cols="30" rows="10"></textarea>
+        <p>
+            文章类型:
+            <select name="article_type">
+            {% for type in func %}
+                <option value={{ type.0 }}>{{ type.1 }}</option>
+            {% endfor %}
+
+            </select>
+        </p>
+        <p>文章标签：
+        <select name="tags"  multiple>
+            {% for tag in tags %}
+                <option value={{ tag.nid}}>{{ tag.title }}</option>
+            {% endfor %}
+        </select>
+        </p>
+        <p>文章分类：
+        <select name="category">
+            {% for c in category %}
+                <option value={{ c.nid}}>{{ c.title }}</option>
+            {% endfor %}
+        </select>
+        <p>
+            文章描述：
+            <textarea name="desc" cols="30" rows="10"></textarea>
+        </p>
+        </p>
+
+        <p><input type="button" id="1" value="提交"></p>
+    </form>
+</div>
+
+</body>
+<script>
+  var edit=KindEditor.create('#a',{
+        width:'700px',
+        height:'500px',
+        uploadJson:'/upload_file/',
+        extraFileUploadParams:{
+            'csrfmiddlewaretoken':'{{ csrf_token }}',}})
+</script>
+<script>
+$('[value="提交"]').click(function () {
+   var $csrf = $("[name='csrfmiddlewaretoken']").val();
+   var $title=$('[name="title"]').val();
+   var $content= edit.html();
+   var $tags=$('[ name="tags"]').val();
+   var $category=$('[name="category"]').val();
+   var $desc=$('[name="desc"]').val();
+   var $article_type=$('[name="article_type"]').val();
+
+   var formdata = new FormData();
+   formdata.append('csrfmiddlewaretoken',$csrf);
+   formdata.append('title',$title);
+   formdata.append('content',$content);
+   formdata.append('tags',$tags);
+   formdata.append('category',$category);
+   formdata.append('desc',$desc);
+   formdata.append('article_type',$article_type);
+   $.ajax({
+       url:'/add_article/',
+       type:'POST',
+        processData: false,
+        contentType: false,
+        data:formdata,
+        success:function (data) {
+            if (data=='OK'){location.href="/back_index/"}
+        }
+
+
+   })
+
+})
+
+
+</script>
+</html>

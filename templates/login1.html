@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录注册</title>
+    <script src="/static/jquery-3.2.1.min.js"></script>
+    <script src="/static/dist/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="/static/dist/css/bootstrap.css">
+    <style>
+        .container {
+            margin-top: 140px
+        }
+
+        .valid_img {
+            width: 150px;
+            height: 40px;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container col-md-offset-3">
+    <div class="row">
+        <div class="col-md-6">
+            <form>
+                {% csrf_token %}
+                <div class="form-group">
+                    用户名：
+                    <input type="text" class="form-control" placeholder="用户名" name="username">
+                </div>
+                <div class="form-group">
+                    密码：
+                    <input type="password" class="form-control" placeholder="密码" name="password">
+                </div>
+                <label for="valid_code">验证码</label>
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <input type="text" class="form-control" placeholder="验证码" name="valid_cod">
+                    </div>
+                    <div class="col-md-6">
+                        <img class="valid_img" src="/valid_code/" alt="">
+                        <a id="refresh">刷新</a>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-default" id="ajaxsef">提交</button>
+                <span class="error"></span>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    $('#refresh').click(function () {
+        $('.valid_img')[0].src += '?'
+    })
+
+
+    $('#ajaxsef').click(function () {
+        var $name = $('[ name="username"]').val()
+        var $password = $('[name="password"]').val()
+        var $valid_cod = $('[name="valid_cod"]').val()
+        var $csrf = $('[name="csrfmiddlewaretoken"]').val()
+        $.ajax({
+            url: '/login/',
+            type: 'POST',
+            data: {'username': $name, 'password': $password, 'valid_code': $valid_cod, 'csrfmiddlewaretoken': $csrf},
+            success: function (data) {
+                data = JSON.parse(data)
+                {% if nextpath %}
+                    if (data['user']) {
+                        location.href = '{{ nextpath }}'
+                    }
+                {% else %}
+                    if (data['user']) {
+                        location.href = '/index/'
+                    }
+                    else {
+                        $('.error').text(data['errors']).css({'color': 'red'})
+                    }
+                {% endif %}
+            }
+
+        })
+    })
+</script>
+</html>
